@@ -1,0 +1,147 @@
+import java.text.SimpleDateFormat
+def num1 = 11
+def num2 = 7
+def num3 = 3
+def dia = new Date().getDay()
+def semana = [1: "lunes", 2: "martes", 3: "miercoles", 4: "jueves", 5: "viernes", 6: "sabado", 7: "domingo"]
+pipeline
+{
+    agent any
+    tools
+    {
+        maven 'Maven'
+    }
+    options
+    {
+        timeout(time:10, unit: 'MINUTES')
+    }
+    stages
+    {
+        stage("calculo")
+        {
+            steps
+            {
+                script
+                {
+                    //dia = 1
+                    if (semana[dia] == semana[1] )
+                    {
+                        suma =  num1 + num2 + num3
+                        resta = num1 - num2 - num3
+                        echo "Es " + semana[dia]
+                        echo "num1 es: "+ num1
+                        echo "num1 es: "+ num2
+                        echo "num1 es: "+ num3
+                        
+                        echo "la suma es: " + suma
+                        echo "la resta es: " + resta
+                         
+                    }
+                    else
+                    {
+                        echo "No es " + semana[1] + ", no hay aritmetica"
+                    }
+                }
+            }
+        }
+        stage("clonado")
+        {
+            steps
+            {
+                script
+                {
+                    //dia = 2
+                    if (semana[dia] == semana[2] )
+                    {
+                        echo "Es " + semana[dia]
+                        git branch: "main", url: "https://github.com/ferranmuste/cursoJenkinsFMBMavenBD.git"
+                    }
+                    else
+                    {
+                        echo "No es " + semana[2] + ", no hay clonado"
+                    }
+                }
+            }
+        }
+        stage("maven limpieza instalacion")
+        {
+            steps
+            {
+                script
+                {
+                    //dia = 3
+                    if (semana[dia] == semana[3] )
+                    {
+                        echo "Es " + semana[dia]
+                        dir("${env.WORKSPACE}")
+                        {
+                          sh 'mvn clean'
+                        }
+                        dir("${env.WORKSPACE}")
+                        {
+                          sh 'mvn install'
+                        }
+                    }
+                    else
+                    {
+                        echo "No es " + semana[3] + ", no hay maven limpieza instalacion"
+                    }
+                }
+            }
+        }
+        stage("copiado")
+        {
+            steps
+            {
+                script
+                {
+                    //dia = 4
+                    if (semana[dia] == semana[4] )
+                    {
+                        echo "Es " + semana[dia]
+                        sh 'cp -f /var/jenkins_home/.m2/repository/com/ferran/myfirst/0.0.1-SNAPSHOT/myfirst-0.0.1-SNAPSHOT.jar /tmp/myfirst-0.0.1-SNAPSHOT.jar'
+                    }
+                    else
+                    {
+                        echo "No es " + semana[4] + ", no hay clopiado"
+                    }
+                }
+            }
+        }
+        stage("impresion")
+        {
+            steps
+            {
+                script
+                {
+                    //dia = 5
+                    if (semana[dia] == semana[5] )
+                    {
+                        echo "Es " + semana[dia]
+                        info = "La suma es: " + suma + "\n" + "La resta es: " + resta + "\n"
+                        writeFile(file: "output.txt", text: info)
+                        println readFile(file: 'output.txt')
+                        
+                    }
+                    else
+                    {
+                        echo "No es " + semana[5] + ", no hay impresion"
+                    }
+                }
+            }
+        }
+        
+    }
+    post
+    {
+        always
+        {
+            echo 'El pipeline ejecutado correcto.'
+        }
+        failure
+        {
+            echo 'El pipeline fallo'
+            mail to: "ferranmuste@itnow.es", subject: "Pipeline fallo", body: "El pipeline contiene errores"
+        }
+    }
+}
